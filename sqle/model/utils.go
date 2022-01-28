@@ -10,7 +10,6 @@ import (
 	"github.com/actiontech/sqle/sqle/driver"
 	"github.com/actiontech/sqle/sqle/errors"
 	"github.com/actiontech/sqle/sqle/log"
-
 	"github.com/jinzhu/gorm"
 	"github.com/jmoiron/sqlx"
 	"github.com/jmoiron/sqlx/reflectx"
@@ -120,9 +119,9 @@ func (s *Storage) AutoMigrate() error {
 		&SMTPConfiguration{},
 		&SystemVariable{},
 		&AuditPlan{},
-		&AuditPlanReport{},
+		&AuditPlanReportV2{},
 		&AuditPlanSQL{},
-		&AuditPlanReportSQL{},
+		&AuditPlanReportSQLV2{},
 		&LDAPConfiguration{},
 	).Error
 	if err != nil {
