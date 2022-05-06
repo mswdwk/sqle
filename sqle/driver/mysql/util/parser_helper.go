@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/actiontech/sqle/sqle/errors"
+
 	"github.com/pingcap/parser"
 	"github.com/pingcap/parser/ast"
 	"github.com/pingcap/parser/format"
@@ -21,7 +23,7 @@ func ParseSql(sql string) ([]ast.StmtNode, error) {
 	p := parser.New()
 	stmts, _, err := p.PerfectParse(sql, "", "")
 	if err != nil {
-		return nil, err
+		return nil, errors.New(errors.SQLParserError, err)
 	}
 	return stmts, nil
 }
@@ -31,7 +33,7 @@ func ParseOneSql(sql string) (ast.StmtNode, error) {
 	stmt, err := p.ParseOneStmt(sql, "", "")
 	if err != nil {
 		fmt.Printf("parse error: %v\nsql: %v", err, sql)
-		return nil, err
+		return nil, errors.New(errors.SQLParserError, err)
 	}
 	return stmt, nil
 }

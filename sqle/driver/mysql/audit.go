@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"fmt"
+	"github.com/actiontech/sqle/sqle/errors"
 	"strings"
 
 	"github.com/actiontech/sqle/sqle/driver"
@@ -30,6 +31,8 @@ const (
 	ColumnsValuesNotMatchMessage       = "指定的值列数与字段列数不匹配"
 	DuplicatePrimaryKeyedColumnMessage = "主键字段 %s 重复"
 	DuplicateIndexedColumnMessage      = "索引 %s 字段 %s重复"
+	SQLParserErrorMessage              = "SQL解析器解析失败: %s"
+	CheckInvalidMessage                = "无效检查失败: %s"
 )
 
 const CheckInvalidErrorFormat = "预检查失败: %v"
@@ -64,8 +67,12 @@ func (i *Inspect) CheckInvalid(node ast.Node) error {
 	case *ast.UnparsedStmt:
 		err = i.checkUnparsedStmt(stmt)
 	}
+	// Parser errors will be handled separately in the outer layer
+	if errors.IsSQLParserError(err) {
+		return err
+	}
 	if err != nil {
-		return fmt.Errorf(CheckInvalidErrorFormat, err)
+		return fmt.Errorf(CheckInvalidMessage, err)
 	}
 	return nil
 

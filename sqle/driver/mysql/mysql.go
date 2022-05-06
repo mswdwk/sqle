@@ -14,6 +14,7 @@ import (
 	rulepkg "github.com/actiontech/sqle/sqle/driver/mysql/rule"
 	"github.com/actiontech/sqle/sqle/driver/mysql/session"
 	"github.com/actiontech/sqle/sqle/driver/mysql/util"
+	sqleError "github.com/actiontech/sqle/sqle/errors"
 	"github.com/actiontech/sqle/sqle/pkg/params"
 
 	"github.com/pingcap/parser/ast"
@@ -275,7 +276,10 @@ func (i *Inspect) Audit(ctx context.Context, sql string) (*driver.AuditResult, e
 	} else {
 		err = i.CheckInvalid(nodes[0])
 	}
-	if err != nil {
+	if sqleError.IsSQLParserError(err) {
+		i.result.Add(driver.RuleLevelError, SQLParserErrorMessage, err.Error())
+		return i.result, nil
+	} else if err != nil {
 		return nil, err
 	}
 
@@ -303,7 +307,7 @@ func (i *Inspect) Audit(ctx context.Context, sql string) (*driver.AuditResult, e
 		if i.IsOfflineAudit() && !handler.IsAllowOfflineRule(nodes[0]) {
 			continue
 		}
-		if err := handler.Func(i.Ctx, *rule, i.result, nodes[0]); err != nil {
+		if err := handler.Func(i.Ctx, *rule, i.result, nodes[0]); err != nil && !sqleError.IsSQLParserError(err) {
 			return nil, err
 		}
 	}
@@ -346,7 +350,8 @@ func (i *Inspect) Audit(ctx context.Context, sql string) (*driver.AuditResult, e
 
 	// print osc
 	oscCommandLine, err := i.generateOSCCommandLine(nodes[0])
-	if err != nil {
+	// If the parsing fails, the previous check will record errors, and there is no need to report errors repeatedly
+	if err != nil && !sqleError.IsSQLParserError(err) {
 		return nil, err
 	}
 	if oscCommandLine != "" {

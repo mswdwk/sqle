@@ -246,7 +246,8 @@ func (a *action) audit() (err error) {
 		defer d.Close(context.TODO())
 
 		rollbackSQLs, err := genRollbackSQL(a.entry, a.task, d)
-		if err != nil {
+		// Unresolved is an expected error and should be logged in the audit results, not thrown
+		if err != nil && !errors.IsSQLParserError(err) {
 			return err
 		}
 

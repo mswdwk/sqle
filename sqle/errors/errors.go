@@ -35,6 +35,9 @@ const (
 	DriverNotExist ErrorCode = 5001
 	LoadDriverFail ErrorCode = 5008
 
+	// 6 series error also used internally
+	SQLParserError ErrorCode = 6001
+
 	FeatureNotImplemented ErrorCode = 7001
 )
 
@@ -108,4 +111,15 @@ func NewAccessDeniedErr(format string, a ...interface{}) error {
 
 func NewUserNotPermissionError(op string) error {
 	return New(UserNotPermission, fmt.Errorf("当前用户没有 %v 的权限, 无法执行此操作", op))
+}
+
+func IsSQLParserError(err error) bool {
+	if err == nil {
+		return false
+	}
+	codeErr, ok := err.(*CodeError)
+	if !ok {
+		return false
+	}
+	return codeErr.Code() == int(SQLParserError)
 }
