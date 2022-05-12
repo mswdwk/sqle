@@ -55,6 +55,10 @@ func convertRuleFromDriverToProto(rule *Rule) *proto.Rule {
 	}
 }
 
+type AAA struct {
+	*driverPlugin
+}
+
 // InitPlugins init plugins at plugins directory. It should be called on host process.
 func InitPlugins(pluginDir string) error {
 	if pluginDir == "" {
@@ -62,10 +66,12 @@ func InitPlugins(pluginDir string) error {
 	}
 
 	getServerHandle := func(path string, closeCh <-chan struct{}) (proto.DriverClient, error) {
+		fmt.Println("aaa", filepath.Base(path))
 		client := goPlugin.NewClient(&goPlugin.ClientConfig{
 			HandshakeConfig: handshakeConfig,
 			Plugins: goPlugin.PluginSet{
-				filepath.Base(path): &driverPlugin{},
+				"SQL Server": &driverPlugin{},
+				"sqle":       &AAA{},
 			},
 			Cmd:              exec.Command(path),
 			AllowedProtocols: []goPlugin.Protocol{goPlugin.ProtocolGRPC},
@@ -79,7 +85,7 @@ func InitPlugins(pluginDir string) error {
 		if err != nil {
 			return nil, err
 		}
-		rawI, err := gRPCClient.Dispense(filepath.Base(path))
+		rawI, err := gRPCClient.Dispense("sqle")
 		if err != nil {
 			return nil, err
 		}
