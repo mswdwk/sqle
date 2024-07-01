@@ -4,11 +4,19 @@ override GIT_COMMIT     		= $(shell git rev-parse HEAD)
 override PROJECT_NAME 			= sqle
 override LDFLAGS 				= -ldflags "-X 'main.version=${GIT_VERSION}'"
 override DOCKER         		= $(shell which docker)
-override GOOS           		= linux
+override GOOS           		= linux 
 override OS_VERSION 			= el7
 override GO_BUILD_FLAGS 		= -mod=vendor
 override RPM_USER_GROUP_NAME 	= actiontech
 override RPM_USER_NAME 			= actiontech-universe
+
+OS=$(shell uname -o)
+ifeq ($(OS), Darwin)
+ override GOOS=darwin
+ $(warning this is macOS)
+else
+ $(warning this is default)
+endif
 
 GOARCH         		= amd64
 RPMBUILD_TARGET		= x86_64
